@@ -4,7 +4,7 @@
 
 ## parameters
 
-|Name|Type|Description|Default|
+|Name|Type|Default|Description|
 |--|--|--|--|
 |VpcCidrBlock|String|10.38.0.0/16|VPC CidrBlock|
 |PvtSubnetCidrBlocks|CommaDelimitedList|10.38.0.0/24, 10.38.1.0/24|Private Subnet CidrBlocks|

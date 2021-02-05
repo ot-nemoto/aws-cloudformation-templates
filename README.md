@@ -1,1 +1,1 @@
-# aws-templates
+# aws-cloudformation-templates
