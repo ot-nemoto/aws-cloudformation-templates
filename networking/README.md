@@ -2,6 +2,8 @@
 
 ## architecture
 
+![](https://github.com/ot-nemoto/aws-cloudformation-templates/blob/images/networking.png)
+
 ## parameters
 
 |Name|Type|Default|Description|
