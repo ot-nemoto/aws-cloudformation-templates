@@ -3,7 +3,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   SrcAccountIds:
     Type: CommaDelimitedList
-    NoEcho: True
 
 Resources:
   LambdaBasicExecRole:
@@ -61,3 +60,5 @@ Outputs:
   SigiInUrl:
     Value: !Sub https://signin.aws.amazon.com/switchrole?roleName=${SwitchRole}&account=${AWS::AccountId}
     Description: Give this link to users who can switch roles in the console
+  SwitchRoleArn:
+    Value: !GetAtt SwitchRole.Arn
