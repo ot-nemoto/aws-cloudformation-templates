@@ -2,19 +2,17 @@
 
 ## architecture
 
----
-
 ## Account to which you want to switch
 
 - スイッチ先のロールを作成
 
-## parameters
+### parameters
 
 |Name|Type|Default|Description|
 |--|--|--|--|
 |SrcAccountIds|CommaDelimitedList|*Required*|Specify the AWS account IDs that allow switch roles, separated by commas.|
 
-## deploy
+### deploy
 
 ```sh
 aws cloudformation create-stack \
@@ -24,21 +22,19 @@ aws cloudformation create-stack \
     --template-body file://dest/template.yaml
 ```
 
----
-
 ## Account from which you want to switch
 
 - スイッチ先のアカウントのロールへスイッチするためのグループを作成
 - 作成後、スイッチを許可するユーザを作成したグループへアタッチする
 
-## parameters
+### parameters
 
 |Name|Type|Default|Description|
 |--|--|--|--|
 |SwitchRoleArns|CommaDelimitedList|*Required*|Specify the SwitchRoleArn of the switch destination account, separated by commas.|
 |AssumeGroupName|String|AssumeGroup|Assume IAM group name.|
 
-## deploy
+### deploy
 
 ```sh
 aws cloudformation create-stack \
