@@ -1,0 +1,25 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  SwitchRoleArns:
+    Type: CommaDelimitedList
+  AssumeGroupName:
+    Type: String
+    Default: AssumeGroup
+
+Resources:
+  AssumeGroup:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: !Ref AssumeGroupName
+      ManagedPolicyArns:
+      - !Ref AssumeRole
+  AssumeRole:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action: sts:AssumeRole
+          Resource: !Ref SwitchRoleArns
