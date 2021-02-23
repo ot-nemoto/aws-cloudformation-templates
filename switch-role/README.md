@@ -47,5 +47,5 @@ aws cloudformation create-stack \
     --stack-name assume-role \
     --capabilities CAPABILITY_NAMED_IAM \
     --parameters ParameterKey=SwitchRoleArns,ParameterValue='arn:aws:iam::123456789012:role/SwitchRoleName\,arn:aws:iam::234567890123:role/SwitchRoleName' \
-    --template-body file://dest/template.yaml
+    --template-body file://src/template.yaml
 ```

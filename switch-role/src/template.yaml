@@ -3,6 +3,7 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   SwitchRoleArns:
     Type: CommaDelimitedList
+    Description: e.g. arn:aws:iam::123456789012:role/SwitchRoleName,arn:aws:iam::234567890123:role/SwitchRoleName
   AssumeGroupName:
     Type: String
     Default: AssumeGroup

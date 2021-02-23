@@ -1,13 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Metadata:
-  AWS::CloudFormation::Interface:
-    ParameterLabels:
-      SrcAccountIds:
-        default: Source account IDs
-      SwitchRoleName:
-        default: Switch role name
-
 Parameters:
   SrcAccountIds:
     Type: CommaDelimitedList
