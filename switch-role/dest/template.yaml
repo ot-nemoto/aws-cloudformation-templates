@@ -3,6 +3,9 @@ AWSTemplateFormatVersion: '2010-09-09'
 Parameters:
   SrcAccountIds:
     Type: CommaDelimitedList
+  SwitchRoleName:
+    Type: String
+    Default: AdminAccessRole
 
 Resources:
   LambdaBasicExecRole:
@@ -47,6 +50,7 @@ Resources:
   SwitchRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: !Ref SwitchRoleName
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:

@@ -2,30 +2,32 @@
 
 ## architecture
 
-## Account to which you want to switch
+## 切り替え先
 
 - スイッチ先のロールを作成
+- 作成するスイッチロールには `AdministratorAccess` ポリシーを付与
 
 ### parameters
 
 |Name|Type|Default|Description|
 |--|--|--|--|
 |SrcAccountIds|CommaDelimitedList|*Required*|Specify the AWS account IDs that allow switch roles, separated by commas.|
+|SwitchRoleName|String|AdminAccessRole|Switch role name.|
 
 ### deploy
 
 ```sh
 aws cloudformation create-stack \
     --stack-name switch-role \
-    --capabilities CAPABILITY_IAM \
+    --capabilities CAPABILITY_NAMED_IAM \
     --parameters ParameterKey=SrcAccountIds,ParameterValue='123456789012\,234567890123' \
     --template-body file://dest/template.yaml
 ```
 
-## Account from which you want to switch
+## 切り替え元
 
 - スイッチ先のアカウントのロールへスイッチするためのグループを作成
-- 作成後、スイッチを許可するユーザを作成したグループへアタッチする
+- 作成後、スイッチを許可するユーザを作成したグループへアタッチすること
 
 ### parameters
 
