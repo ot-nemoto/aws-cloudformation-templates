@@ -14,6 +14,8 @@
 
 ## deploy
 
+[![](https://raw.githubusercontent.com/ot-nemoto/aws-cloudformation-templates/images/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/create/review?stackName=networking&templateURL=https://s3-ap-northeast-1.amazonaws.com/ot-nemoto.aws-cloudformation-templates/networking/template.yaml)
+
 ```sh
 aws cloudformation create-stack \
     --stack-name networking \
