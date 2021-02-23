@@ -16,6 +16,8 @@
 
 ### deploy
 
+[![](https://raw.githubusercontent.com/ot-nemoto/aws-cloudformation-templates/images/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/create/review?stackName=switch-role&templateURL=https://s3-ap-northeast-1.amazonaws.com/ot-nemoto.aws-cloudformation-templates/switch-role/dest/template.yaml)
+
 ```sh
 aws cloudformation create-stack \
     --stack-name switch-role \
@@ -37,6 +39,8 @@ aws cloudformation create-stack \
 |AssumeGroupName|String|AssumeGroup|Assume IAM group name.|
 
 ### deploy
+
+[![](https://raw.githubusercontent.com/ot-nemoto/aws-cloudformation-templates/images/cloudformation-launch-stack.png)](https://console.aws.amazon.com/cloudformation/home?region=ap-northeast-1#/stacks/create/review?stackName=assume-role&templateURL=https://s3-ap-northeast-1.amazonaws.com/ot-nemoto.aws-cloudformation-templates/switch-role/src/template.yaml)
 
 ```sh
 aws cloudformation create-stack \
