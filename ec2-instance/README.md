@@ -15,10 +15,10 @@
 |Name|Type|Default|Description|
 |--|--|--|--|
 |Env|String|Staging|環境[`Staging`\|`Production`]|
-|ImageId|AWS::EC2::Image::Id|マシンイメージID|
-|SubnetId|AWS::EC2::Subnet::Id|インスタンスを配置するサブネット|
-|KeyName|AWS::EC2::KeyPair::KeyName|キーペア名|
-|SecurityGroupIds|List<AWS::EC2::SecurityGroup::Id>|セキュリティグループID|
+|ImageId|AWS::EC2::Image::Id|*require*|マシンイメージID|
+|SubnetId|AWS::EC2::Subnet::Id|*require*|インスタンスを配置するサブネット|
+|KeyName|AWS::EC2::KeyPair::KeyName|*require*|キーペア名|
+|SecurityGroupIds|List<AWS::EC2::SecurityGroup::Id>|*require*|セキュリティグループID|
 
 ## deploy
 
