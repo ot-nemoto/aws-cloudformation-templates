@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Env:
+    Type: String
+    Default: Staging
+    AllowedValues: ["Production", "Staging"]
+    Description: "Enter Production or Staging. Default is Staging."
+  ImageId:
+    Type: AWS::EC2::Image::Id
+  SubnetId:
+    Type: AWS::EC2::Subnet::Id
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+  SecurityGroupIds:
+    Type: List<AWS::EC2::SecurityGroup::Id>
+
+Conditions:
+  IsProduction:
+    !Equals [!Ref Env, Production]
+
+Resources:
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref ImageId
+      InstanceType: !If [IsProduction, r4.xlarge, t2.large]
+      BlockDeviceMappings:
+      - DeviceName: /dev/xvda
+        Ebs:
+          VolumeType: !If [IsProduction, io1, gp3]
+          Iops: !If [IsProduction, 15000, 3000]
+          DeleteOnTermination: true
+          VolumeSize: 1700
+      NetworkInterfaces:
+      - AssociatePublicIpAddress: true
+        DeviceIndex: 0
+        GroupSet: !Ref SecurityGroupIds
+        SubnetId: !Ref SubnetId
+      KeyName: !Ref KeyName
+      UserData:
+        Fn::Base64: !Sub |
+          #cloud-config
+          cloud_final_modules:
+          - [scripts-user, always]
+          runcmd:
+          - [ sh, -c, 'sed -i -e "s#HOSTNAME=.*#HOSTNAME=${AWS::StackName}#g" /etc/sysconfig/network' ]
+          - [ sh, -c, 'hostname ${AWS::StackName}']
+      Tags:
+      - Key: Name
+        Value: !Ref AWS::StackName
+
+Outputs:
+  PrivateIp:
+    Value: !Sub ${Instance.PublicIp}
