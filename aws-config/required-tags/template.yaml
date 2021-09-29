@@ -1,0 +1,99 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Resources:
+  ConfigConfigRule:
+    Type: AWS::Config::ConfigRule
+    Properties:
+      ConfigRuleName: required-tags2
+      Description: Checks whether your resources have the tags that you specify.
+      InputParameters: |
+        {
+          "tag1Key": "aws:cloudformation:logical-id"
+        }
+      Scope: 
+        ComplianceResourceTypes:
+        - AWS::EC2::Instance
+      Source: 
+        Owner: AWS
+        SourceIdentifier: REQUIRED_TAGS
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: aws-config-required-tags2
+      TopicName: aws-config-required-tags2
+  SNSTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument: !Sub |
+        {
+          "Version": "2008-10-17",
+          "Id": "__default_policy_ID",
+          "Statement": [
+            {
+              "Sid": "__default_statement_ID",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": "*"
+              },
+              "Action": [
+                "SNS:GetTopicAttributes",
+                "SNS:SetTopicAttributes",
+                "SNS:AddPermission",
+                "SNS:RemovePermission",
+                "SNS:DeleteTopic",
+                "SNS:Subscribe",
+                "SNS:ListSubscriptionsByTopic",
+                "SNS:Publish",
+                "SNS:Receive"
+              ],
+              "Resource": "${SNSTopic}",
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceOwner": "${AWS::AccountId}"
+                }
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "events.amazonaws.com"
+              },
+              "Action": "sns:Publish",
+              "Resource": "${SNSTopic}"
+            }
+          ]
+        }
+      Topics: 
+      - !Ref SNSTopic
+  EventsRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: aws-config-required-tags
+      EventPattern: !Sub |
+        {
+          "source": ["aws.config"],
+          "detail-type": ["Config Rules Compliance Change"],
+          "detail": {
+            "messageType": ["ComplianceChangeNotification"],
+            "configRuleName": ["${ConfigConfigRule}"],
+            "newEvaluationResult": {
+              "complianceType": ["NON_COMPLIANT"]
+            }
+          }
+        }
+      State: "ENABLED"
+      Targets: 
+      - Arn: !Ref SNSTopic
+        Id: 1
+        InputTransformer: 
+          InputPathsMap: 
+            awsAccountId: $.detail.awsAccountId
+            awsRegion: $.detail.awsRegion
+            compliance: $.detail.newEvaluationResult.complianceType
+            resourceId: $.detail.resourceId
+            resourceType: $.detail.resourceType
+            rule: $.detail.configRuleName
+            time: $.detail.newEvaluationResult.resultRecordedTime
+          InputTemplate: |
+            "On <time> AWS Config rule <rule> evaluated the <resourceType> with Id <resourceId> in the account <awsAccountId> region <awsRegion> as <compliance> For more details open the AWS Config console at https://console.aws.amazon.com/config/home?region=<awsRegion>#/timeline/<resourceType>/<resourceId>/configuration"
+      EventBusName: default
