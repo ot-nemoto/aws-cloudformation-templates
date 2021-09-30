@@ -147,4 +147,3 @@ Resources:
             time: $.detail.newEvaluationResult.resultRecordedTime
           InputTemplate: |
             "On <time> AWS Config rule <rule> evaluated the <resourceType> with Id <resourceId> in the account <awsAccountId> region <awsRegion> as <compliance> For more details open the AWS Config console at https://<awsRegion>.console.aws.amazon.com/config/home?region=<awsRegion>#/resources/timeline?resourceId=<resourceId>&resourceType=<resourceType>"
-      EventBusName: default
