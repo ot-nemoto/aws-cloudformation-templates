@@ -1,7 +1,6 @@
 # aws-config/cloudformation-stack-drift-detection-check
 
-- EC2インスタンスがCloudFormationで作成されたかどうかを検証するルール
-- 検証はインスタンスのタグに `aws:cloudformation:logical-id` が含まれているかどうかで判定する
+- CloudFormationのドリフト検出の結果、ドリフトしたかどうかを検証するルール
 - SNSのサブスクリプションでデプロイ後に要設定（プロトコルは Email）
 
 ## deploy
