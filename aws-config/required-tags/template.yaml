@@ -4,7 +4,7 @@ Resources:
   ConfigConfigRule:
     Type: AWS::Config::ConfigRule
     Properties:
-      ConfigRuleName: required-tags2
+      ConfigRuleName: required-tags
       Description: Checks whether your resources have the tags that you specify.
       InputParameters: |
         {
@@ -19,8 +19,8 @@ Resources:
   SNSTopic:
     Type: AWS::SNS::Topic
     Properties:
-      DisplayName: aws-config-required-tags2
-      TopicName: aws-config-required-tags2
+      DisplayName: aws-config-required-tags
+      TopicName: aws-config-required-tags
   SNSTopicPolicy:
     Type: AWS::SNS::TopicPolicy
     Properties:
