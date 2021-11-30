@@ -1,0 +1,191 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  User:
+    Type: String
+    Default: ot-nemoto
+    Description: Basic Auth User.
+  Password:
+    Type: String
+    NoEcho: true
+    Default: Passw0rd
+    Description: Basic Auth Password.
+  ResasApiKey:
+    Type: String
+    NoEcho: true
+    Description: RESAS-API ApiKey. refs https://opendata.resas-portal.go.jp/
+
+Resources:
+  ##############################################################################
+  # Bucket for Static Sample Site
+  ##############################################################################
+  S3Bucket:
+    Type: AWS::S3::Bucket
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: 2008-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            CanonicalUser: !GetAtt CloudFrontOriginAccessIdentity.S3CanonicalUserId
+          Action:
+          - s3:GetObject
+          Resource:
+          - !Sub "arn:aws:s3:::${S3Bucket}/*"
+  CloudFrontOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub access-identity-${S3Bucket}
+
+  ##############################################################################
+  # CloudFront
+  ##############################################################################
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+        - DomainName: !Sub ${S3Bucket.DomainName}
+          Id: !Sub S3-${S3Bucket}
+          S3OriginConfig:
+            OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${CloudFrontOriginAccessIdentity}
+        - DomainName: opendata.resas-portal.go.jp
+          Id: Web-opendata.resas-portal.go.jp
+          CustomOriginConfig:
+            OriginProtocolPolicy: https-only
+          OriginCustomHeaders:
+          - HeaderName: X-API-KEY
+            HeaderValue: !Ref ResasApiKey
+        DefaultCacheBehavior:
+          TargetOriginId: !Sub S3-${S3Bucket}
+          ViewerProtocolPolicy: redirect-to-https
+          ForwardedValues:
+            QueryString: false
+        CacheBehaviors:
+        - TargetOriginId: Web-opendata.resas-portal.go.jp
+          ViewerProtocolPolicy: redirect-to-https
+          PathPattern: "api/*"
+          ForwardedValues:
+            QueryString: true
+        - TargetOriginId: !Sub S3-${S3Bucket}
+          ViewerProtocolPolicy: redirect-to-https
+          PathPattern: "basic_auth_lambda_edge/*"
+          ForwardedValues:
+            QueryString: true
+          LambdaFunctionAssociations:
+          - EventType: viewer-request
+            LambdaFunctionARN: !Ref LambdaEdgeFunction.Version
+        - TargetOriginId: !Sub S3-${S3Bucket}
+          ViewerProtocolPolicy: redirect-to-https
+          PathPattern: "basic_auth_cloudfront_functions/*"
+          ForwardedValues:
+            QueryString: true
+          FunctionAssociations:
+          - EventType: viewer-request
+            FunctionARN: !GetAtt CoundFrontFunction.FunctionARN
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100
+        HttpVersion: http2
+        IPV6Enabled: false
+        Enabled: true
+
+  ##############################################################################
+  # Basic Auth by CloudFront Functions
+  ##############################################################################
+  CoundFrontFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: BasicAuth
+      FunctionConfig:
+        Comment: Basic Auth
+        Runtime: cloudfront-js-1.0
+      AutoPublish: true
+      FunctionCode: !Sub |
+        function handler(event) {
+          var request = event.request;
+          var headers = request.headers;
+          var authString = `Basic ${!"${User}:${Password}".toString('base64')}`
+          if (typeof headers.authorization === "undefined" || headers.authorization.value !== authString) {
+            return {
+              statusCode: 401,
+              statusDescription: "Unauthorized",
+              headers: { "www-authenticate": { value: "Basic" } }
+            };
+          }
+          return request;
+        }
+
+  ##############################################################################
+  # Basic Auth by Lambda@Edge
+  ##############################################################################
+  LambdaEdgeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      AutoPublishAlias: live
+      Role: !GetAtt LambdaEdgeFunctionRole.Arn
+      Runtime: python3.7
+      Handler: index.lambda_handler
+      InlineCode: !Sub |
+        import base64
+        import json
+        def lambda_handler(event, context):
+          print(json.dumps(event))
+          request = event['Records'][0]['cf']['request']
+          headers = request['headers']
+          user = "${User}"
+          password = "${Password}"
+          auth_str = 'Basic ' + base64.b64encode('{}:{}'.format(user, password).encode('utf-8')).decode('ascii')
+          if (headers.get('authorization') == None or headers['authorization'][0]['value'] != auth_str):
+            response = {
+              'status': '401',
+              'statusDescription': 'Unauthorized',
+              'body': 'Unauthorized',
+              'headers': {
+                'www-authenticate': [{ 'key': 'WWW-Authenticate', 'value':'Basic' }]
+              }
+            }
+            return response
+          return request
+  LambdaEdgeFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - lambda.amazonaws.com
+            - edgelambda.amazonaws.com
+          Action: sts:AssumeRole
+      Path: /service-role/
+      Policies:
+      - PolicyName: AWSLambdaEdgeExecutionRole
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            Resource: "arn:aws:logs:*:*:*"
+          - Effect: Allow
+            Action:
+            - lambda:GetFunction
+            - "lambda:EnableReplication*"
+            - iam:CreateServiceLinkedRole
+            - cloudfront:CreateDistribution
+            - cloudfront:UpdateDistribution
+            Resource: "*"
+
+Outputs:
+  Url:
+    Value: !Sub https://${CloudFrontDistribution.DomainName}/
+  S3Bucket:
+    Value: !Sub ${S3Bucket}
