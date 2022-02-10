@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  ExternalId:
+    Type: String
+    NoEcho: true
+
+Resources:
+  IAMRole:  
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      RoleName: MackerelAWSIntegrationRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: arn:aws:iam::217452466226:root
+          Action: sts:AssumeRole
+          Condition:
+            StringEquals:
+              sts:ExternalId: !Ref ExternalId
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess
+  IAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+          - "ecs:List*"
+          - "ecs:Describe*"
+          Resource: "*"
+      Roles:
+      - !Ref IAMRole
+      PolicyName: MackerelAWSIntegrationECSPolicy
+
+Outputs:
+  IAMRoleArn:
+    Value: !GetAtt IAMRole.Arn
