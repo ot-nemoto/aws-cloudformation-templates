@@ -11,7 +11,7 @@
 |Name|Type|Default|Description|
 |--|--|--|--|
 |SlackWorkspaceId|String|*require*|SlackワークスペースID.<br>AWS ChatbotのSlackクライアントから取得.|
-|SlackChannelId|AWS::EC2::Image::Id|*require*|SlackチャネルID.|
+|SlackChannelId|String|*require*|SlackチャネルID.|
 
 ```sh
 aws cloudformation create-stack \
