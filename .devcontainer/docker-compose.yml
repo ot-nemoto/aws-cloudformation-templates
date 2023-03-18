@@ -1,0 +1,26 @@
+version: "3"
+
+services:
+  workspace:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    user: "1000:1000"
+    secrets:
+    - aws_credentials
+    - aws_config
+    volumes:
+    - ..:/workspace/aws-cloudformation-templates
+    command: >
+      sh -c "
+        mkdir -p ~/.aws &&
+        cp /run/secrets/aws_config ~/.aws/config &&
+        cp /run/secrets/aws_credentials ~/.aws/credentials &&
+        sleep infinity
+      "
+
+secrets:
+  aws_credentials:
+    file: ${AWS_CONFIGURATION_PATH}/credentials
+  aws_config:
+    file: ${AWS_CONFIGURATION_PATH}/config

@@ -1,0 +1,11 @@
+{
+  "name": "aws-cloudformation-templates",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "workspace",
+  "workspaceFolder": "/workspace/aws-cloudformation-templates",
+  "shutdownAction": "stopCompose",
+  "settings": {},
+  "extensions": [],
+  "remoteUser": "ec2-user"
+  // "postCreateCommand": "source $(sudo find / -name git-completion.bash)"
+}

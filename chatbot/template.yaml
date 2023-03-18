@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  SlackWorkspaceId:
+    Type: String
+  SlackChannelId:
+    Type: String
+
+Resources:
+  SNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: chatbot-topic
+
+  SlackChannelConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: skack-channel-config
+      IamRoleArn: !GetAtt ChatbotIamRole.Arn
+      LoggingLevel: INFO
+      SlackChannelId: !Ref SlackChannelId
+      SlackWorkspaceId: !Ref SlackWorkspaceId
+      SnsTopicArns:
+      - !Ref SNSTopic
+
+  ChatbotIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: chatbot.amazonaws.com
+          Action: sts:AssumeRole
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/ReadOnlyAccess
+      - arn:aws:iam::aws:policy/AWSSupportAccess
+      Policies:
+      - PolicyName: AWS-Chatbot-LambdaInvoke-Policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:invokeAsync
+            - lambda:invokeFunction
+            Resource:
+            - "*"
+      - PolicyName: AWS-Chatbot-NotificationsOnly-Policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Allow
+            Action:
+            - "cloudwatch:Describe*"
+            - "cloudwatch:Get*"
+            - "cloudwatch:List*"
+            Resource:
+            - "*"
+      - PolicyName: AWS-Chatbot-ReadonlyCommands-Policy
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Effect: Deny
+            Action:
+            - "iam:*"
+            - "s3:GetBucketPolicy"
+            - "ssm:*"
+            - "sts:*"
+            - "kms:*"
+            - "cognito-idp:GetSigningCertificate"
+            - "ec2:GetPasswordData"
+            - "ecr:GetAuthorizationToken"
+            - "gamelift:RequestUploadCredentials"
+            - "gamelift:GetInstanceAccess"
+            - "lightsail:DownloadDefaultKeyPair"
+            - "lightsail:GetInstanceAccessDetails"
+            - "lightsail:GetKeyPair"
+            - "lightsail:GetKeyPairs"
+            - "redshift:GetClusterCredentials"
+            - "storagegateway:DescribeChapCredentials"
+            Resource:
+            - "*"
